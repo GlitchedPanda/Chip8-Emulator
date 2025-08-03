@@ -1,7 +1,7 @@
 mod processor;
 mod font;
 
-use std::{env, thread, time::Duration};
+use std::{env, time::Duration};
 
 use processor::Processor;
 
@@ -12,7 +12,7 @@ use winit::event_loop::{ControlFlow, EventLoop};
 use winit::window::WindowBuilder;
 
 fn print_usage() {
-    println!("Usage: Chip8Emulator [pathToGame]");
+    println!("Usage: Chip8-Emulator [pathToGame]");
 }
 
 fn main() {
