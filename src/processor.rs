@@ -41,7 +41,7 @@ impl Processor {
         Processor {
             ram: ram,
             v: [0u8; 16], // Registers
-            i: 0, // Index pointer
+            i: 0, // Index register
             pc: 0x200, // Program counter
             vram: [false; 64*32],
             vram_updated: false,
@@ -312,8 +312,24 @@ impl Processor {
                 let mut flipped: bool = false; // We set Vf to to 1 if any screen pixels are flipped from
                                                // set to unset when the sprite is drawn.
                 
-                // TODO
-                // Add rendering here
+                for y_line in 0..height {
+                    let address: usize = self.i + y_line as usize;
+                    let pixels: u8 = self.ram[address];
+
+                    for x_line in 0..8 { 
+                        // Use a mask to fetch current pixel's bit. Only flip if a 1
+                        if (pixels & (0b1000_0000 >> x_line)) != 0 {
+                            // Sprites should wrap around screen, so apply modulo
+                            let x = (x_cord + x_line) as usize % 64;
+                            let y = (y_cord + y_line) as usize % 32;
+                            
+                            let index = x + 64 * y;
+                            
+                            flipped |= self.vram[index];
+                            self.vram[index] ^= true;
+                        }
+                    }
+                }
 
                 if flipped {
                     self.v[0xF] = 1;
