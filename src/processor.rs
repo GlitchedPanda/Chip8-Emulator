@@ -102,7 +102,7 @@ impl Processor {
     }
 
     fn run_opcode(&mut self, opcode: u16) { // https://en.wikipedia.org/wiki/CHIP-8#Opcode_table
-        println!("Running opcode: {:04x}", opcode);
+        //println!("Running opcode: {:04x}", opcode);
 
         let nibbles = ( // Half a byte is called a nibble
             (opcode & 0xF000) >> 12,
@@ -327,6 +327,7 @@ impl Processor {
                             
                             flipped |= self.vram[index];
                             self.vram[index] ^= true;
+                            self.vram_updated = true;
                         }
                     }
                 }

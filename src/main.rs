@@ -19,7 +19,7 @@ fn main() {
         return;
     }
 
-    //env_logger::init(); // WGPU will fail silently unless we add this
+    //env_logger::init(); // WGPU will fail silently without this
 
     //let event_loop = EventLoop::new().unwrap();
     //event_loop.set_control_flow(ControlFlow::Wait);
@@ -37,6 +37,10 @@ fn main() {
         let result = processor.tick();
         if result.vram_updated {
             // Draw to screen here
+            for pixel in 0..result.vram.len() {
+                print!("{} ", result.vram[pixel as usize]);
+            }
+            println!();
         }
 
         thread::sleep(Duration::from_millis(2));
