@@ -432,6 +432,25 @@ impl Processor {
 
                 ProgramCounter::Next
             },
+            (0xF, _, 0x5, 0x5) => { // Stores from V0 to VX (including VX) in memory, starting at address I. 
+                let x: u16 = nibbles.1;
+                let i: usize = self.i;
+                for index in 0..=x {
+                    self.ram[i + index as usize] = self.v[index as usize];
+                }
+
+                ProgramCounter::Next
+            },
+            (0xF, _, 0x6, 0x5) => { // Fills from V0 to VX (including VX) with values from memory, 
+                                    // starting at address I. 
+                let x: u16 = nibbles.1;
+                let i = self.i;
+                for index in 0..=x {
+                    self.v[index as usize] = self.ram[i + index as usize];
+                }
+
+                ProgramCounter::Next
+            },
             (_, _, _, _) => { unimplemented!("[-] Unimplemented opcode: {:04x}", opcode); },
         };
 
