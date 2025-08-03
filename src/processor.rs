@@ -141,7 +141,7 @@ impl Processor {
                 ProgramCounter::Nothing
             },
             (0x3, _, _, _) => { // Skips the next instruction if Vx == nn
-                let x: u16 = nibbles.0;
+                let x: u16 = nibbles.1;
                 let nn: u16 = opcode & 0x00FF;
                 
                 if self.v[x as usize] == nn as u8 {
@@ -151,7 +151,7 @@ impl Processor {
                 }
             },
             (0x4, _, _, _) => { // Skips the next instruction if Vx != nn
-                let x: u16 = nibbles.0;
+                let x: u16 = nibbles.1;
                 let nn: u16 = opcode & 0x00FF;
                 
                 if self.v[x as usize] != nn as u8 {
@@ -182,7 +182,7 @@ impl Processor {
                 let x: u16 = nibbles.1;
                 let nn: u16 = opcode & 0x00FF;
 
-                self.v[x as usize] += nn as u8;
+                self.v[x as usize] = self.v[x as usize].wrapping_add(nn as u8);
 
                 ProgramCounter::Next
             },
@@ -299,35 +299,34 @@ impl Processor {
                 let x: u16 = nibbles.1;
                 let nn: u16 = opcode & 0x00FF;
                 
-                let rng: u8 = random();
+                let rng: u8 = random::<u8>();
                 self.v[x as usize] = rng & (nn as u8); 
 
                 ProgramCounter::Next
             },
             (0xD, _, _, _) => { // Draws a sprite at coordinate (Vx, Vy) that has a width of 8 pixels and a height of N pixels.
-                let x_cord: u16 = nibbles.1;
-                let y_cord: u16 = nibbles.2;
-                let height: u16 = nibbles.3;
-
-                let mut flipped: bool = false; // We set Vf to to 1 if any screen pixels are flipped from
-                                               // set to unset when the sprite is drawn.
+                let x_coord = self.v[nibbles.1 as usize] as u16;
+                let y_coord = self.v[nibbles.2 as usize] as u16;
+                let num_rows = nibbles.3;
+            
+                let mut flipped = false;
                 
-                for y_line in 0..height {
-                    let address: usize = self.i + y_line as usize;
-                    let pixels: u8 = self.ram[address];
-
-                    for x_line in 0..8 { 
+                for y_line in 0..num_rows {
+                    let addr = self.i + (y_line as usize);
+                    let pixels = self.ram[addr as usize];
+                    for x_line in 0..8 {
                         // Use a mask to fetch current pixel's bit. Only flip if a 1
                         if (pixels & (0b1000_0000 >> x_line)) != 0 {
                             // Sprites should wrap around screen, so apply modulo
-                            let x = (x_cord + x_line) as usize % 64;
-                            let y = (y_cord + y_line) as usize % 32;
+                            let x = (x_coord + x_line) as usize % 64;
+                            let y = (y_coord + y_line) as usize % 42;
+
+                            let idx = x + 64 * y;
                             
-                            let index = x + 64 * y;
-                            
-                            flipped |= self.vram[index];
-                            self.vram[index] ^= true;
-                            self.vram_updated = true;
+                            flipped |= self.vram[idx];
+                            self.vram[idx] ^= true;
+                            self.vram_updated = true; // So the renderer knows it should update the
+                                                      // screen
                         }
                     }
                 }
