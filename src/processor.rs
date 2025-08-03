@@ -359,7 +359,62 @@ impl Processor {
                     ProgramCounter::Next
                 }
             },
+            (0xF, _, 0x0, 0x7) => { // Sets Vx to the value of the delay timer.
+                let x: u16 = nibbles.1;
+                
+                self.v[x as usize] = self.delay_timer;
 
+                ProgramCounter::Next
+            },
+            (0xF, _, 0x0, 0xA) => { // Waits for any key to be pressed, blocking any other
+                                    // operation and storing the pressed key in Vx
+                let x: u16 = nibbles.1;
+
+                let mut pressed: bool = false;
+
+                for i in 0..self.keys.len() {
+                    if self.keys[i] {
+                        self.v[x as usize] = i as u8;
+                        pressed = true;
+                        break;
+                    }
+                }
+
+                if pressed {
+                    ProgramCounter::Next
+                } else {
+                    ProgramCounter::Nothing
+                }
+            },
+            (0xF, _, 0x1, 0x5) => { // Sets the delay timer to Vx
+                let x: u16 = nibbles.1;
+                self.delay_timer = self.v[x as usize];
+
+                ProgramCounter::Next
+            },
+            (0xF, _, 0x1, 0x8) => { // Sets the sound timer to Vx
+                let x: u16 = nibbles.1;
+                self.sound_timer = self.v[x as usize];
+
+                ProgramCounter::Next
+            },
+            (0xF, _, 0x1, 0xE) => { // Adds Vx to I. Vf isn't affected.
+                let x: u16 = nibbles.1;
+                let vx: usize = self.v[x as usize] as usize;
+                
+                self.i = self.i.wrapping_add(vx);
+
+                ProgramCounter::Next
+            },
+            (0xF, _, 0x2, 0x9) => { // Set I to the font address of character Vx
+                let x: u16 = nibbles.1;
+                let character: u8 = self.v[x as usize];
+
+                self.i = (character * 5) as usize; // Font sprites take up five bytes each, so
+                                                   // their address is just their value times 5.
+
+                ProgramCounter::Next
+            },
             (_, _, _, _) => { unimplemented!("[-] Unimplemented opcode: {:04x}", opcode); },
         };
 
