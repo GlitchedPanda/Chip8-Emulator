@@ -319,7 +319,7 @@ impl Processor {
                         if (pixels & (0b1000_0000 >> x_line)) != 0 {
                             // Sprites should wrap around screen, so apply modulo
                             let x = (x_coord + x_line) as usize % 64;
-                            let y = (y_coord + y_line) as usize % 42;
+                            let y = (y_coord + y_line) as usize % 32;
 
                             let idx = x + 64 * y;
                             
