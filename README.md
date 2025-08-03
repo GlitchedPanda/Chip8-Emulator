@@ -1,6 +1,6 @@
 # Chip-8 Emulator in Rust
 
-![Preview](https://imgur.com/vGiC32H)
+![Preview](https://i.imgur.com/vGiC32H.png)
 
 A small CHIP-8 emulator written in Rust, developed as a learning project to deepen my understanding of emulators, the Rust programming language, and computer architecture.
 
