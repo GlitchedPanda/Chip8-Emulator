@@ -415,6 +415,23 @@ impl Processor {
 
                 ProgramCounter::Next
             },
+            (0xF, _, 0x3, 0x3) => { // Stores the binary-coded decimal representation of Vx,
+                                    // with the hundreds digit in memory at location in I, 
+                                    // the tens digit at location I+1, and the ones digit
+                                    // at location I+2
+                let x: u16 = nibbles.1;
+                let vx: f32 = self.v[x as usize] as f32;
+                
+                let hundreds = (vx / 100.0).floor() as u8;
+                let tens = ((vx / 10.0) % 10.0).floor() as u8;
+                let ones = (vx % 10.0) as u8;
+                    
+                self.ram[self.i as usize] = hundreds;
+                self.ram[(self.i + 1) as usize] = tens;
+                self.ram[(self.i + 2) as usize] = ones;
+
+                ProgramCounter::Next
+            },
             (_, _, _, _) => { unimplemented!("[-] Unimplemented opcode: {:04x}", opcode); },
         };
 
