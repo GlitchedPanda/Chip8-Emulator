@@ -53,7 +53,7 @@ fn main() {
     println!("[+] Starting emulation cycle...");
 
     let mut last_tick = std::time::Instant::now();
-    let tick_duration = Duration::from_millis(2); 
+    let tick_duration = Duration::from_millis(16); 
     
     let mut latest_vram = [false; 64 * 32];
 
