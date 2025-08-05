@@ -102,7 +102,7 @@ impl Processor {
     }
 
     fn run_opcode(&mut self, opcode: u16) { // https://en.wikipedia.org/wiki/CHIP-8#Opcode_table
-        println!("Running opcode: {:04x}", opcode);
+        //println!("Running opcode: {:04x}", opcode);
 
         let nibbles = ( // Half a byte is called a nibble
             (opcode & 0xF000) >> 12,
@@ -123,7 +123,7 @@ impl Processor {
                 
                 self.pc = ret_addr;
             
-                ProgramCounter::Nothing
+                ProgramCounter::Next
             },
             (0x1, _, _, _) => { // JMP
                 let nnn: u16 = opcode & 0x0FFF;
