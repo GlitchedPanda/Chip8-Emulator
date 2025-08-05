@@ -102,7 +102,7 @@ impl Processor {
     }
 
     fn run_opcode(&mut self, opcode: u16) { // https://en.wikipedia.org/wiki/CHIP-8#Opcode_table
-        //println!("Running opcode: {:04x}", opcode);
+        println!("Running opcode: {:04x}", opcode);
 
         let nibbles = ( // Half a byte is called a nibble
             (opcode & 0xF000) >> 12,
@@ -126,7 +126,7 @@ impl Processor {
                 ProgramCounter::Nothing
             },
             (0x1, _, _, _) => { // JMP
-                let nnn: u16 = opcode & 0x0FFF; // Gets the address to jump to
+                let nnn: u16 = opcode & 0x0FFF;
                 
                 self.pc = nnn as usize;
 
@@ -167,7 +167,7 @@ impl Processor {
                 if self.v[x as usize] == self.v[y as usize] {
                     ProgramCounter::Skip
                 } else {
-                    ProgramCounter::Nothing
+                    ProgramCounter::Next 
                 }
             },
             (0x6, _, _, _) => { // Sets Vx to NN
@@ -191,6 +191,7 @@ impl Processor {
                 let y: u16 = nibbles.2;
                 
                 self.v[x as usize] = self.v[y as usize];
+                self.v[0xF] = 0; // Clear VF flag
 
                 ProgramCounter::Next
             },
@@ -199,6 +200,8 @@ impl Processor {
                 let y: u16 = nibbles.2;
                 
                 self.v[x as usize] |= self.v[y as usize];
+                self.v[0xF] = 0; // Clear VF flag
+
                 ProgramCounter::Next
             },
             (0x8, _, _, 0x2) => { // Sets Vx to Vx AND Vy
@@ -206,6 +209,7 @@ impl Processor {
                 let y: u16 = nibbles.2;
                 
                 self.v[x as usize] &= self.v[y as usize];
+                self.v[0xF] = 0; // Clear VF flag
 
                 ProgramCounter::Next
             },
@@ -214,6 +218,7 @@ impl Processor {
                 let y: u16 = nibbles.2;
                 
                 self.v[x as usize] ^= self.v[y as usize];
+                self.v[0xF] = 0; // Clear VF flag
 
                 ProgramCounter::Next
             },
@@ -242,7 +247,11 @@ impl Processor {
                 ProgramCounter::Next
             },
             (0x8, _, _, 0x6) => { // Shifts Vx to the right by one
-                let x: u16 = nibbles.1; 
+                let x: u16 = nibbles.1;
+                let y: u16 = nibbles.2;
+
+                self.v[x as usize] = self.v[y as usize];
+
                 let lsb = self.v[x as usize] & 0x1; // Least significant bit
                 
                 self.v[x as usize] >>= 1;
@@ -264,6 +273,10 @@ impl Processor {
             },
             (0x8, _, _, 0xE) => { // Shifts Vx to the left by one
                 let x: u16 = nibbles.1;
+                let y: u16 = nibbles.2;
+                
+                self.v[x as usize] = self.v[y as usize];
+
                 let msb = (self.v[x as usize] >> 7) & 0x1; // Most significant bit
                 
                 self.v[x as usize] <<= 1; 
@@ -293,7 +306,7 @@ impl Processor {
 
                 self.pc = (self.v[0x0] as u16 + nnn) as usize;
                 
-                ProgramCounter::Next
+                ProgramCounter::Nothing
             },
             (0xC, _, _, _) => { // Sets VX to the result of a bitwise and operation on a random number
                 let x: u16 = nibbles.1;
