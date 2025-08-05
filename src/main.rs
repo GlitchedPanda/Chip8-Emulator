@@ -32,7 +32,7 @@ fn main() {
     let window = {
         let size = LogicalSize::new(64, 42);
         WindowBuilder::new()
-            .with_title("Hello Pixels")
+            .with_title("CHIP8")
             .with_inner_size(size)
             .with_min_inner_size(size)
             .build(&event_loop)
