@@ -38,6 +38,8 @@ impl Processor {
             ram[i] = FONTSET[i];
         }
 
+        //ram[0x1ff] = 1; // For Timendus/chip8-test-suite's quirks test
+
         Processor {
             ram: ram,
             v: [0u8; 16], // Registers
@@ -331,8 +333,8 @@ impl Processor {
                         // Use a mask to fetch current pixel's bit. Only flip if a 1
                         if (pixels & (0b1000_0000 >> x_line)) != 0 {
                             // Sprites should wrap around screen, so apply modulo
-                            let x = (x_coord + x_line) as usize % 64;
-                            let y = (y_coord + y_line) as usize % 32;
+                            let x: usize = (x_coord + x_line) as usize % 64;
+                            let y: usize = (y_coord + y_line) as usize % 32;
 
                             let idx = x + 64 * y;
                             
@@ -342,7 +344,7 @@ impl Processor {
                                                       // screen
                         }
                     }
-                }
+                } 
 
                 if flipped {
                     self.v[0xF] = 1;
@@ -447,20 +449,24 @@ impl Processor {
             },
             (0xF, _, 0x5, 0x5) => { // Stores from V0 to VX (including VX) in memory, starting at address I. 
                 let x: u16 = nibbles.1;
-                let i: usize = self.i;
+
                 for index in 0..=x {
-                    self.ram[i + index as usize] = self.v[index as usize];
+                    self.ram[self.i + index as usize] = self.v[index as usize];
                 }
+
+                self.i += (x + 1) as usize;
 
                 ProgramCounter::Next
             },
             (0xF, _, 0x6, 0x5) => { // Fills from V0 to VX (including VX) with values from memory, 
                                     // starting at address I. 
                 let x: u16 = nibbles.1;
-                let i = self.i;
+
                 for index in 0..=x {
-                    self.v[index as usize] = self.ram[i + index as usize];
+                    self.v[index as usize] = self.ram[self.i + index as usize];
                 }
+
+                self.i += (x + 1) as usize;
 
                 ProgramCounter::Next
             },
