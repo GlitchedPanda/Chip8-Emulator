@@ -4,8 +4,8 @@ use rand::random;
 
 use crate::font::FONTSET;
 
-pub struct State<'a> {
-    pub vram: &'a [bool; 64*32],
+pub struct State {
+    pub vram: [bool; 64*32],
     pub vram_updated: bool
 }
 
@@ -22,8 +22,8 @@ pub struct Processor {
     pc: usize,
     vram: [bool; 64*32],
     vram_updated: bool,
-    delay_timer: u8,
-    sound_timer: u8,
+    pub delay_timer: u8,
+    pub sound_timer: u8,
     stack: [usize; 16],
     sp: usize,
     keys: [bool; 16]
@@ -38,7 +38,7 @@ impl Processor {
             ram[i] = FONTSET[i];
         }
 
-        //ram[0x1ff] = 1; // For Timendus/chip8-test-suite's quirks test
+        ram[0x1ff] = 1; // For Timendus/chip8-test-suite's quirks test
 
         Processor {
             ram: ram,
@@ -81,20 +81,22 @@ impl Processor {
         self.vram_updated = false;
 
         let opcode = self.get_opcode();
-        self.run_opcode(opcode);
+        self.run_opcode(opcode); 
 
+        State {
+            vram: self.vram,
+            vram_updated: self.vram_updated
+        }
+    }
+
+    pub fn decrement_timers(&mut self) {
         if self.delay_timer > 0 {
             self.delay_timer -= 1;
         }
 
         if self.sound_timer > 0 {
             self.sound_timer -= 1; 
-        }
-
-        State {
-            vram: &self.vram,
-            vram_updated: self.vram_updated
-        }
+        } 
     }
 
     fn get_opcode(&self) -> u16 {

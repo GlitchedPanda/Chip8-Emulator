@@ -11,6 +11,8 @@ use winit::event::{Event, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop};
 use winit::window::WindowBuilder;
 
+use crate::processor::State;
+
 fn print_usage() {
     println!("Usage: Chip8-Emulator [pathToGame]");
 }
@@ -52,8 +54,8 @@ fn main() {
     
     println!("[+] Starting emulation cycle...");
 
-    let mut last_tick = std::time::Instant::now();
-    let tick_duration = Duration::from_millis(16); 
+    let mut last_frame = std::time::Instant::now();
+    let frame_duration = Duration::from_millis(16); // 16ms ~= 60hz 
     
     let mut latest_vram = [false; 64 * 32];
 
@@ -80,14 +82,20 @@ fn main() {
             },
             Event::AboutToWait => {
                 let now = std::time::Instant::now();
-                if now.duration_since(last_tick) >= tick_duration {
-                    let state = processor.tick();
-                    last_tick = now;
-
-                    if state.vram_updated {
-                        latest_vram.copy_from_slice(state.vram);
-                        window.request_redraw();
+                if now.duration_since(last_frame) >= frame_duration {
+                    let mut state: State = State { vram: [false; 64 * 32], vram_updated: false };
+                    for _ in 1..11 {
+                        state = processor.tick();
                     }
+
+                    processor.decrement_timers();
+
+                    last_frame = now;
+
+                    //if state.vram_updated {
+                        latest_vram.copy_from_slice(&state.vram);
+                        window.request_redraw();
+                    //}
                 }  
             },
             _ => {},

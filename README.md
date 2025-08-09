@@ -23,7 +23,7 @@ A small CHIP-8 emulator written in Rust, developed as a learning project to deep
 
 ## To Do
 * [ ] Input
-* [ ] Propper opcode loop (InstructionsPerFrame)
+* [x] Propper opcode loop (InstructionsPerFrame)
 * [ ] Sound
 
 ## Acknowledgments
