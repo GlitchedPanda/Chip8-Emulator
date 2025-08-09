@@ -55,7 +55,7 @@ fn main() {
     println!("[+] Starting emulation cycle...");
 
     let mut last_frame = std::time::Instant::now();
-    let frame_duration = Duration::from_millis(16); // 16ms ~= 60hz 
+    let frame_duration = Duration::from_millis(16); // 16ms ~= 60Hz 
     
     let mut latest_vram = [false; 64 * 32];
 
@@ -83,12 +83,12 @@ fn main() {
             Event::AboutToWait => {
                 let now = std::time::Instant::now();
                 if now.duration_since(last_frame) >= frame_duration {
+                    processor.decrement_timers();
+
                     let mut state: State = State { vram: [false; 64 * 32], vram_updated: false };
                     for _ in 1..11 {
                         state = processor.tick();
                     }
-
-                    processor.decrement_timers();
 
                     last_frame = now;
 
