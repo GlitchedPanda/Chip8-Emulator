@@ -1,9 +1,11 @@
 mod processor;
 mod font;
+mod audio;
 
 use std::{env, time::Duration};
 
 use processor::Processor;
+use audio::Audio;
 
 use pixels::{Error, Pixels, SurfaceTexture};
 use winit::dpi::LogicalSize;
@@ -48,6 +50,7 @@ fn main() {
     };
 
     let mut processor = Processor::new();
+    let audio = Audio::new(500.0);
 
     println!("[+] Loading rom...");
     processor.load(&args[1]);
@@ -86,8 +89,14 @@ fn main() {
                     processor.decrement_timers();
 
                     let mut state: State = State { vram: [false; 64 * 32], vram_updated: false };
-                    for _ in 1..11 {
+                    for _ in 1..11 { // 11 opf without disp. wait, 15 opf with
                         state = processor.tick();
+                    }
+
+                    if processor.sound_timer > 0 {
+                        audio.start();
+                    } else {
+                        audio.stop();
                     }
 
                     last_frame = now;
