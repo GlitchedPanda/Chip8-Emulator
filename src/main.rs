@@ -1,11 +1,13 @@
 mod processor;
 mod font;
 mod audio;
+mod input;
 
 use std::{env, time::Duration};
 
 use processor::Processor;
 use audio::Audio;
+use input::Input;
 
 use pixels::{Error, Pixels, SurfaceTexture};
 use winit::dpi::LogicalSize;
@@ -51,6 +53,7 @@ fn main() {
 
     let mut processor = Processor::new();
     let audio = Audio::new(500.0);
+    let mut input = Input::new();
 
     println!("[+] Loading rom...");
     processor.load(&args[1]);
@@ -83,9 +86,18 @@ fn main() {
                     return;
                 }
             },
+            Event::WindowEvent {
+                event: WindowEvent::KeyboardInput { event, .. },
+                ..
+            } => {
+                if let winit::keyboard::PhysicalKey::Code(key_code) = event.physical_key {
+                    input.update_key_state(key_code, event.state);
+                }
+            }, 
             Event::AboutToWait => {
                 let now = std::time::Instant::now();
                 if now.duration_since(last_frame) >= frame_duration {
+                    processor.update_keys(input.get_key_map());
                     processor.decrement_timers();
 
                     let mut state: State = State { vram: [false; 64 * 32], vram_updated: false };

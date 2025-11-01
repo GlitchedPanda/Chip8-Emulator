@@ -38,7 +38,7 @@ impl Processor {
             ram[i] = FONTSET[i];
         }
 
-        ram[0x1ff] = 1; // For Timendus/chip8-test-suite's quirks test
+        //ram[0x1ff] = 1; // For Timendus/chip8-test-suite's quirks test
 
         Processor {
             ram: ram,
@@ -53,6 +53,10 @@ impl Processor {
             sp: 0, // Stack pointer
             keys: [false; 16]
         } // Return empty instance of Processor
+    }
+
+    pub fn update_keys(&mut self, key_map: &[bool; 16]) {
+        self.keys.copy_from_slice(key_map);
     }
 
     fn push(&mut self, value: usize) {
@@ -400,6 +404,7 @@ impl Processor {
                 if pressed {
                     ProgramCounter::Next
                 } else {
+                    self.pc -= 2;
                     ProgramCounter::Nothing
                 }
             },
