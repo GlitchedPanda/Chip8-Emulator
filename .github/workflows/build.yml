@@ -42,8 +42,11 @@ jobs:
           target: ${{ matrix.platform.target }}
           args: "--release"
           strip: true
+      
       - name: Publish artifacts and release
         uses: houseabsolute/actions-rust-release@v0
         with:
           executable-name: Chip8-Emulator
           target: ${{ matrix.platform.target }}
+          changes-file: ""
+          generate-release-notes: true
