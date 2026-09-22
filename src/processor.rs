@@ -127,11 +127,9 @@ impl Processor {
                 ProgramCounter::Next
             },
             (0x0, 0x0, 0xE, 0xE) => { // RET
-                let ret_addr: usize = self.pop();
-                
-                self.pc = ret_addr;
+                self.pc = self.pop();
             
-                ProgramCounter::Next
+                ProgramCounter::Nothing
             },
             (0x1, _, _, _) => { // JMP
                 let nnn: u16 = opcode & 0x0FFF;
@@ -143,7 +141,7 @@ impl Processor {
             (0x2, _, _ , _) => { // CALL
                 let nnn: u16 = opcode & 0x0FFF;
                 
-                self.push(self.pc);
+                self.push(self.pc + 2);
                 self.pc = nnn as usize;
 
                 ProgramCounter::Nothing
@@ -404,7 +402,6 @@ impl Processor {
                 if pressed {
                     ProgramCounter::Next
                 } else {
-                    self.pc -= 2;
                     ProgramCounter::Nothing
                 }
             },
