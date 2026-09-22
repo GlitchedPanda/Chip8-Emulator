@@ -36,7 +36,7 @@ fn main() {
     event_loop.set_control_flow(ControlFlow::Poll);
 
     let window = {
-        let size = LogicalSize::new(64, 42);
+        let size = LogicalSize::new(640, 420);
         WindowBuilder::new()
             .with_title("CHIP8")
             .with_inner_size(size)
