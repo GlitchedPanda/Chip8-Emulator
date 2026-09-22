@@ -81,7 +81,7 @@ fn main() {
                 draw(pixels.frame_mut(), &latest_vram);
                 
                 if let Err(err) = pixels.render() {
-                    eprintln!("Render error: {}", err);
+                    eprintln!("[-] Render error: {}", err);
                     elwt.exit();
                     return;
                 }
