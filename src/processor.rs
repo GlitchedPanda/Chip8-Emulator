@@ -324,37 +324,40 @@ impl Processor {
                 ProgramCounter::Next
             },
             (0xD, _, _, _) => { // Draws a sprite at coordinate (Vx, Vy) that has a width of 8 pixels and a height of N pixels.
-                let x_coord = self.v[nibbles.1 as usize] as u16;
-                let y_coord = self.v[nibbles.2 as usize] as u16;
-                let num_rows = nibbles.3;
-            
-                let mut flipped = false;
-                
-                for y_line in 0..num_rows {
-                    let addr = self.i + (y_line as usize);
-                    let pixels = self.ram[addr as usize];
-                    for x_line in 0..8 {
-                        // Use a mask to fetch current pixel's bit. Only flip if a 1
-                        if (pixels & (0b1000_0000 >> x_line)) != 0 {
-                            // Sprites should wrap around screen, so apply modulo
-                            let x: usize = (x_coord + x_line) as usize % 64;
-                            let y: usize = (y_coord + y_line) as usize % 32;
+                let x_coord = self.v[nibbles.1 as usize] as usize;
+                let y_coord = self.v[nibbles.2 as usize] as usize;
+                let num_rows = nibbles.3 as usize;
 
-                            let idx = x + 64 * y;
-                            
+                let x_start = x_coord % 64;
+                let y_start = y_coord % 32;
+
+                let mut flipped = false;
+
+                for y_line in 0..num_rows {
+                    let y = y_start + y_line;
+                    if y >= 32 {
+                        break;
+                    }
+
+                    let sprite_row = self.ram[(self.i + y_line) & 0xFFF];
+
+                    for x_line in 0..8 {
+                        let x = x_start + x_line;
+                        if x >= 64 {
+                            break;
+                        }
+
+                        if sprite_row & (0x80 >> x_line) != 0 {
+                            let idx = y * 64 + x;
+
                             flipped |= self.vram[idx];
                             self.vram[idx] ^= true;
-                            self.vram_updated = true; // So the renderer knows it should update the
-                                                      // screen
+                            self.vram_updated = true;
                         }
                     }
-                } 
-
-                if flipped {
-                    self.v[0xF] = 1;
-                } else {
-                    self.v[0xF] = 0;
                 }
+
+                self.v[0xF] = if flipped { 1 } else { 0 };
 
                 ProgramCounter::Next
             },
